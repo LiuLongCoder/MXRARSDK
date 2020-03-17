@@ -17,7 +17,7 @@
 
 - ## 流程图
 
-![image](./images/flowchart.png)
+![](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/flowchart.png)
 
 ## 环境及配置
 
@@ -35,7 +35,7 @@
 
    pod 'MXRSDK', :path => '../PodResource
 
-![image](./images/podresource.png)
+![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/podresource.png)
 
 2. Enable Bitcode设置为NO，在Header Search Path里需要添加MXRSDK.framewrok的头文件路径
 
