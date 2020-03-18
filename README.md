@@ -142,18 +142,6 @@
 
 
 
-/// 扫描到普通二维码回调
-
-/// **@param** scanVC 扫面页面
-
-/// **@param** metadataObjects AVCaptureMetadataOutputObjectsDelegate返回的摄像头获取的原数据
-
-/// **@param** value 解析出普通二维码数据
-
-\- (**void**)scanVC:(MXRSDKScanVC *)scanVC didOutputMetadataObjects:(NSArray *)metadataObjects value:(NSString *)value;
-
- 
-
 ### 四、分享接口
 
 ​	描述：分享功能
@@ -161,13 +149,34 @@
 ​	
 
 ```objective-c
-/// 提供分享能力，委托SDK进行分享
-/// @param shareEntrance 分享的入口
-/// @param sharePlatfrom 分享到的平台
-/// @param bookId 分享需要的bookId
-/// @param image 分享需要的图片。 从离线阅读入口过来的是nil
-@property (nonatomic, copy) void (^shareBlock)(MXRShareEntrance shareEntrance, MXRSharePlatform sharePlatfrom, NSString *bookId, UIImage *image);
+/**
+ 分享图片接口
 
+ 分享渠道 shareType NSInteger 1微信好友，2微信朋友圈，3微博
+ 分享参数 params  NSDictionary
+ 包含 imageURL NSString类型 URL路径
+ imageLocalPath NSString类型 本地沙盒路径
+ [UIImage imageWithContentsOfFile:imageLocalPath]
+
+ **/
+-(void)callShareImageWithType:(NSInteger)shareType
+                       params:(NSDictionary*)params;
+
+/**
+ 分享链接
+
+ 分享渠道 shareType NSInteger 1微信好友，2微信朋友圈，3微博
+ 分享参数 params  NSDictionary
+ 微信好友渠道包含
+ wechatFriendTitle NSString 微信好友标题
+ wechatFriendContent NSString 微信好友内容
+ wechatCircleTitle NSString 微信朋友圈标题
+ weiboContent NSString 微博内容
+ shareIcon NSString icon的图片
+ shareURL NSString 分享链接
+ */
+-(void)callShareURLWithType:(NSInteger)shareType
+                     params:(NSDictionary*)params;
 ```
 
 
@@ -189,6 +198,10 @@
 ​	描述：SDK通知APP进行埋点
 
 ```objective-c
-/// 提供数据统计的能力，委托SDK进行统计
-@property (nonatomic, copy) void (^dataStatistics)(MXRSDKDataStatisticsType type, NSString *label);
+/// 提供数据统计的能力，委托SDK进行统计 （不建议使用该回调，请使用dataAnalysis）
+@property (nonatomic, copy) void (^dataStatistics)(MXRSDKDataStatisticsType type, NSString *label) DEPRECATED_ATTRIBUTE
+;
+
+/// 咪咕提供数据统计的能力，委托SDK进行统计 param: {@"bookName": @"", @"bookGUID": @""}
+@property (nonatomic, copy) void (^dataAnalysis)(MXRSDKDataStatisticsType type, NSString *label, NSDictionary *param);
 ```
