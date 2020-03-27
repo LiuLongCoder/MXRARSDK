@@ -56,7 +56,9 @@
 
    books.mxrcorp.cn、
 
-   page.mxrcorp.cn
+   page.mxrcorp.cn、
+
+   log.mxrcorp.cn、
 
 5. 增加权限：相机、相册、麦克风、定位 
 
