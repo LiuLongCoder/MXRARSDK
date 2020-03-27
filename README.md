@@ -14,17 +14,16 @@
 
 
 
-
 - ## 流程图
 
-![](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/flowchart.png)
+  ![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/flowchart.png)
+
+![](F:/MXR/git/ar-sdk/images/flowchart.png)
 
 ## 环境及配置
 
 1. 开发工具：Xcode11
-
 2. SDK版本：iOS 8.0
-
 3. 支持架构： armv7s arm64 arm64e
 
 
@@ -35,7 +34,9 @@
 
    pod 'MXRSDK', :path => '../PodResource
 
-![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/podresource.png)
+   ![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/podresource.png)
+
+![image](F:/MXR/git/ar-sdk/images/podresource.png)
 
 2. Enable Bitcode设置为NO，在Header Search Path里需要添加MXRSDK.framewrok的头文件路径
 
@@ -57,13 +58,48 @@
 
    page.mxrcorp.cn
 
-5. 增加权限：相机、相册、麦克风、定位
+5. 增加权限：相机、相册、麦克风、定位 
 
    
 
+## 接入说明
+
+注册梦想人SDK
+
+```objective-c
+#import <MXRSDK.h>
+/*
+梦想人为了能提供更好更健全的SDK，内部集成了崩溃日志收集功能，如果贵方APP集成了的崩溃日志收集（三方或者自定义），请在崩溃初始化后再注册梦想人SDK。
+*/
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    [self initUMengSDK];
+//    [self initUMengSDK];
+    [MXRSDK registerWithAppId:nil];
+    return YES;
+}
+```
+
+初始化相关的操作接口
+
+```objective-c
+/// MXRSDK.h
+
+/// 三方提供获取用户信息的能力，委托SDK进行相关的操作，未登录的时候请设置userId为nil
+/// @see MXRSDKUser
+@property (nonatomic, copy) MXRSDKUser *(^getUserBlock)(void);
+
+/// 内存警告返回信息回调
+///  @param currentVC 当前显示界面
+@property (nonatomic, copy) void (^memoryWarningBlock)(UIViewController *currentVC);
+
+
+```
+
+
+
 ## 接口说明 
 
-###  一、打开图书(停用)
+### 一、打开图书(停用)
 
 ​	描述：在APP中新增专区入口，展示图书列表，点击进入阅读图书。
 
@@ -132,11 +168,31 @@
 ​	描述：原扫描能力功过代理返回
 
 ```objective-c
+/// MXRSDKScanVC.h
+
+/// 设置进入扫一扫的类型，需要在push｜present之前设置好。 默认为普通扫一扫
+@property (nonatomic, assign) MXRScanType scanType;
+
+/// 配置入口属性，用来埋点。 需要三方设置
+@property (nonatomic, assign) MXRScanEntrance entrance;
+
 /// 扫描到普通二维码回调
 /// @param scanVC 扫面页面
 /// @param metadataObjects AVCaptureMetadataOutputObjectsDelegate返回的摄像头获取的原数据
 /// @param value 解析出普通二维码数据
 - (void)scanVC:(MXRSDKScanVC *)scanVC didOutputMetadataObjects:(NSArray *)metadataObjects value:(NSString *)value;
+
+/// 用户点击扫一扫页面的返回按钮，不实现或者返回YES，SDK会自动返回上一层页面，否则不做任何操作
+/// @param scanVC 扫描页面
+- (BOOL)shouldReturnClickBackBtnOfScanVC:(MXRSDKScanVC *)scanVC;
+
+/// 用户点击AR扫页面的更多 AR 图书按钮，页面层级由三方处理
+/// @param scanVC 扫描页面
+- (void)didClickMoreARBookBtnOfScanVC:(MXRSDKScanVC *)scanVC;
+
+/// 用户使用AR 扫描下载图书，当用户没有登录的情况下，需要用户登录的代理方法	
+/// @param scanVC 扫描页面
+- (void)needLoginWithDownloadBookOfScanVC:(MXRSDKScanVC *)scanVC;
 
 ```
 
@@ -193,6 +249,24 @@
 
  
 
+​	相关交互：
+
+```objective-c
+///MXRSDK.h
+/// 利用KVO的方式可以对其进行监听，实时刷新UI
+
+/// 正在下载（包括等等下载）的图书数量，可以用KVO的方式进行监听实时刷新UI
+@property (nonatomic, assign, readonly) NSUInteger downingBookNumber;
+
+/// 所有图书数量，可以用KVO的方式进行监听实时刷新UI
+@property (nonatomic, assign, readonly) NSUInteger totalBookNumber;
+
+//// 由三方调用，扫描二维码下载图书需要登录时，在三方用户登录成功后，下载已扫描到的图书
+- (void)downloadBookAfterSuccessfulLogin;
+```
+
+
+
 ### 六、埋点通知
 
 ​	描述：SDK通知APP进行埋点
@@ -202,6 +276,14 @@
 @property (nonatomic, copy) void (^dataStatistics)(MXRSDKDataStatisticsType type, NSString *label) DEPRECATED_ATTRIBUTE
 ;
 
-/// 咪咕提供数据统计的能力，委托SDK进行统计 param: {@"bookName": @"", @"bookGUID": @""}
+/// 三方提供数据统计的能力，委托SDK进行统计 param: {@"bookName": @"", @"bookGUID": @""}
 @property (nonatomic, copy) void (^dataAnalysis)(MXRSDKDataStatisticsType type, NSString *label, NSDictionary *param);
 ```
+
+
+
+### 七、其他
+
+由于该SDK依赖的集成的SSZipArchive三方库有个中文乱码的bug，需要手动修改源码：
+
+在该库的SSZipArchive.m文件中，把kCFStringEncodingDOSLatinUS改为kCFStringEncodingGB_18030_2000来防止中文乱码
