@@ -14,16 +14,19 @@
 
 
 
+
 - ## 流程图
 
-  ![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/flowchart.png)
+![](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/flowchart.png)
 
-![](F:/MXR/git/ar-sdk/images/flowchart.png)
+![](./images/flowchart.png)
 
 ## 环境及配置
 
 1. 开发工具：Xcode11
+
 2. SDK版本：iOS 8.0
+
 3. 支持架构： armv7s arm64 arm64e
 
 
@@ -34,9 +37,7 @@
 
    pod 'MXRSDK', :path => '../PodResource
 
-   ![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/podresource.png)
-
-![image](F:/MXR/git/ar-sdk/images/podresource.png)
+![image](https://raw.githubusercontent.com/LiuLongCoder/MXRARSDK/master/images/podresource.png)
 
 2. Enable Bitcode设置为NO，在Header Search Path里需要添加MXRSDK.framewrok的头文件路径
 
@@ -56,9 +57,7 @@
 
    books.mxrcorp.cn、
 
-   page.mxrcorp.cn、
-
-   log.mxrcorp.cn、
+   page.mxrcorp.cn
 
 5. 增加权限：相机、相册、麦克风、定位 
 
@@ -81,31 +80,15 @@
 }
 ```
 
-初始化相关的操作接口
-
-```objective-c
-/// MXRSDK.h
-
-/// 三方提供获取用户信息的能力，委托SDK进行相关的操作，未登录的时候请设置userId为nil
-/// @see MXRSDKUser
-@property (nonatomic, copy) MXRSDKUser *(^getUserBlock)(void);
-
-/// 内存警告返回信息回调
-///  @param currentVC 当前显示界面
-@property (nonatomic, copy) void (^memoryWarningBlock)(UIViewController *currentVC);
-
-
-```
-
 
 
 ## 接口说明 
 
-### 一、打开图书
+###  一、打开图书(停用)
 
 ​	描述：在APP中新增专区入口，展示图书列表，点击进入阅读图书。
 
-1. ~~获取图书信息列表~~
+1. 获取图书信息列表
 
    ```objective-c
    // 请求图书列表block
@@ -133,27 +116,22 @@
    @end
    ```
 
-2. 打开图书（1.1版本新增说明）
+2. 打开图书
 
    2.1 调用openBook方法打开相应图书。
 
    2.2  openBook方法说明：
 
    ```objective-c
-   /// 三方图书类型，用来区分纸书和电子书
-   typedef NS_ENUM(NSUInteger, MiguBookType) {
-       MiguBookTypeNormal = 0,        // 普通图书
-       MiguBookTypeEbook,         // 电子书，从三方h5页面入口的图书都认为是电子书
-   };
-
-   /// push到图书阅读页面，如果图书已经下载到本地，且是可以打开的状态，则会打开到阅读页面
-   /// push到图书下载页面，如果图书未下载、图书暂停、图书等待、图书更新等状态，则直接下载该电子书并展示图书下载进度条
-   + (void)openBook:(NSString *)bookGUID miguBookType:(MiguBookType)bookType;
+   /** 根据bookGUID打开对应图书页面
+       @param bookGUID 图书唯一标识
+    */
+   + (void)openBook:(NSString *)bookGUID;
    ```
-   
+
    
 
-### ~~二、打开模型~~
+### 二、打开模型(停用)
 
 ​	场景2描述：在APP原有图书中新增4D模型入口，点击直接打开观看模型。
 
@@ -175,31 +153,11 @@
 ​	描述：原扫描能力功过代理返回
 
 ```objective-c
-/// MXRSDKScanVC.h
-
-/// 设置进入扫一扫的类型，需要在push｜present之前设置好。 默认为普通扫一扫
-@property (nonatomic, assign) MXRScanType scanType;
-
-/// 配置入口属性，用来埋点。 需要三方设置
-@property (nonatomic, assign) MXRScanEntrance entrance;
-
 /// 扫描到普通二维码回调
 /// @param scanVC 扫面页面
 /// @param metadataObjects AVCaptureMetadataOutputObjectsDelegate返回的摄像头获取的原数据
 /// @param value 解析出普通二维码数据
 - (void)scanVC:(MXRSDKScanVC *)scanVC didOutputMetadataObjects:(NSArray *)metadataObjects value:(NSString *)value;
-
-/// 用户点击扫一扫页面的返回按钮，不实现或者返回YES，SDK会自动返回上一层页面，否则不做任何操作
-/// @param scanVC 扫描页面
-- (BOOL)shouldReturnClickBackBtnOfScanVC:(MXRSDKScanVC *)scanVC;
-
-/// 用户点击AR扫页面的更多 AR 图书按钮，页面层级由三方处理
-/// @param scanVC 扫描页面
-- (void)didClickMoreARBookBtnOfScanVC:(MXRSDKScanVC *)scanVC;
-
-/// 用户使用AR 扫描下载图书，当用户没有登录的情况下，需要用户登录的代理方法	
-/// @param scanVC 扫描页面
-- (void)needLoginWithDownloadBookOfScanVC:(MXRSDKScanVC *)scanVC;
 
 ```
 
@@ -214,8 +172,7 @@
 ```objective-c
 /**
  分享图片接口
- 1.1版本新增说明：如果是电子书的情况，图片上不会加水印
- 
+
  分享渠道 shareType NSInteger 1微信好友，2微信朋友圈，3微博
  分享参数 params  NSDictionary
  包含 imageURL NSString类型 URL路径
@@ -257,24 +214,6 @@
 
  
 
-​	相关交互：
-
-```objective-c
-///MXRSDK.h
-/// 利用KVO的方式可以对其进行监听，实时刷新UI
-
-/// 正在下载（包括等等下载）的图书数量，可以用KVO的方式进行监听实时刷新UI
-@property (nonatomic, assign, readonly) NSUInteger downingBookNumber;
-
-/// 所有图书数量，可以用KVO的方式进行监听实时刷新UI
-@property (nonatomic, assign, readonly) NSUInteger totalBookNumber;
-
-//// 由三方调用，扫描二维码下载图书需要登录时，在三方用户登录成功后，下载已扫描到的图书
-- (void)downloadBookAfterSuccessfulLogin;
-```
-
-
-
 ### 六、埋点通知
 
 ​	描述：SDK通知APP进行埋点
@@ -284,7 +223,7 @@
 @property (nonatomic, copy) void (^dataStatistics)(MXRSDKDataStatisticsType type, NSString *label) DEPRECATED_ATTRIBUTE
 ;
 
-/// 三方提供数据统计的能力，委托SDK进行统计 param: {@"bookName": @"", @"bookGUID": @""}
+/// 咪咕提供数据统计的能力，委托SDK进行统计 param: {@"bookName": @"", @"bookGUID": @""}
 @property (nonatomic, copy) void (^dataAnalysis)(MXRSDKDataStatisticsType type, NSString *label, NSDictionary *param);
 ```
 
