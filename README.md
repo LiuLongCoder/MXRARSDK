@@ -145,12 +145,13 @@
    /// 三方图书类型，用来区分纸书和电子书
    typedef NS_ENUM(NSUInteger, MiguBookType) {
        MiguBookTypeNormal = 0,        // 普通图书
-       MiguBookTypeEbook,         // 电子书，从三方h5页面入口的图书都认为是电子书
+       MiguBookTypeEbook,         	   // 电子书，从三方h5页面入口的图书都认为是电子书
    };
 
-   /// push到图书阅读页面，如果图书已经下载到本地，且是可以打开的状态，则会打开到阅读页面
-   /// push到图书下载页面，如果图书未下载、图书暂停、图书等待、图书更新等状态，则直接下载该电子书并展示图书下载进度条
-   + (void)openBook:(NSString *)bookGUID miguBookType:(MiguBookType)bookType;
+   /// 需要登录的情况下返回NO
+   /// push到图书阅读页面场景：如果图书已经下载到本地，且是可以打开的状态，则会打开到阅读页面，返回YES
+   /// push到图书下载页面场景：如果图书未下载、图书暂停、图书等待、图书更新等状态，则直接下载该电子书并展示图书下载进度条，返回YES
+   + (BOOL)openBook:(NSString *)bookGUID miguBookType:(MiguBookType)bookType;
    ```
    
    
@@ -199,10 +200,14 @@
 /// @param scanVC 扫描页面
 - (void)didClickMoreARBookBtnOfScanVC:(MXRSDKScanVC *)scanVC;
 
-/// 用户使用AR 扫描下载图书，当用户没有登录的情况下，需要用户登录的代理方法	
+/// 用户使用AR 扫描下载图书，当用户没有登录的情况下，需要用户登录的代理方法
+/// note: 层级关系由用户控制
 /// @param scanVC 扫描页面
 - (void)needLoginWithDownloadBookOfScanVC:(MXRSDKScanVC *)scanVC;
 
+/// 打开图书，如果图书下载到本地可以打开，则打开，返回YES， 否则无法打开，返回NO，并尝试下载该书
+/// 需要登录的情况下返回NO
++ (BOOL)openBook:(NSString *)bookGUID miguBookType:(MiguBookType)bookType;
 ```
 
 
@@ -272,7 +277,12 @@
 @property (nonatomic, assign, readonly) NSUInteger totalBookNumber;
 
 //// 由三方调用，扫描二维码下载图书需要登录时，在三方用户登录成功后，下载已扫描到的图书
+/// note，请在dimiss或者pop完成的block中进行调用
 - (void)downloadBookAfterSuccessfulLogin;
+
+/// 由咪咕调用，在1.1版本需求中，点击电子书下载过程中，未登录场景下登录成功后需要调该方法，会自动打开下载页面。
+/// note，请在dimiss或者pop完成的block中进行调用
+- (void)downloadEBookAfterSuccessfulLogin;
 ```
 
 
@@ -297,3 +307,4 @@
 由于该SDK依赖的集成的SSZipArchive三方库有个中文乱码的bug，需要手动修改源码：
 
 在该库的SSZipArchive.m文件中，把kCFStringEncodingDOSLatinUS改为kCFStringEncodingGB_18030_2000来防止中文乱码
+
