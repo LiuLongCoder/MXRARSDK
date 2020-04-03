@@ -268,6 +268,10 @@
 
 ```objective-c
 ///MXRSDK.h
+
+/// 发送通知给咪咕告诉其进行处理浮窗 1.1需求新增
+static NSString * const NOTI_MIGU_HIDDEN_AUDIOVIEW = @"NOTI_MIGU_HIDDEN_AUDIOVIEW";
+
 /// 利用KVO的方式可以对其进行监听，实时刷新UI
 
 /// 正在下载（包括等等下载）的图书数量，可以用KVO的方式进行监听实时刷新UI
